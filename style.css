@@ -1,0 +1,58 @@
+/* Reset general */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #020802;
+  color: #00ff00;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Contenedor principal donde vive el canvas de p5.js */
+#app-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #051405;
+  border: 1px solid #114411;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.15);
+  padding: 10px;
+}
+
+/* Estilo estricto del lienzo para que nunca se deforme */
+canvas {
+  display: block;
+  border-radius: 8px;
+  width: 800px !important;
+  height: 800px !important;
+}
+
+/* Estilo para las cajitas de texto RGB */
+input[type="number"] {
+  background-color: #051405;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 4px;
+  font-weight: bold;
+  font-family: monospace;
+  text-align: center;
+}
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
