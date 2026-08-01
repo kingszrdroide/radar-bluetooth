@@ -1,46 +1,38 @@
- // ==========================================
-// RADAR BLUETOOTH V2.0 - CÓDIGO COMPLETO
-// ==========================================
-
-// --- ESTADOS DE LA APLICACIÓN ---
-let estadoApp = "CONFIGURACION"; // "CONFIGURACION" o "RADAR"
-
-// --- SELECCIÓN DE MODO DE RADAR ---
-let modoRadar = "360"; // Modos: "360", "180", "45-135"
-
-// --- PERSONALIZACIÓN DE COLOR (RGB) ---
-let colorRadar = { r: 0, g: 255, b: 0 }; // Verde por defecto
-let inputR, inputG, inputB;
-
-// --- VARIABLES DE DATOS Y BLUETOOTH ---
-let angulo = 0;
-let objeto = [];
+// ==================================================
+// VARIABLES GLOBALES
+// ==================================================
 let port;
+let angulo = 0;
+let objeto = []; // Historial de objetos detectados
+let modoRadar = "180"; // Modos: "360", "180", "ESTATICO"
+let colorRadar = { r: 0, g: 255, b: 0 }; // Color por defecto (Verde)
+let estadoApp = "CONFIGURACION"; // Estados: "CONFIGURACION", "RADAR"
 
-// --- ELEMENTOS DE LA INTERFAZ (UI) ---
+// Elementos de la Interfaz (Botones e Inputs)
 let btnConectar, btnIrRadar, btnVolverConfig;
 let btnModo360, btnModo180, btnModoEstatico;
+let inputR, inputG, inputB;
 let btnColorVerde, btnColorAmbar, btnColorCyan, btnColorRojo;
 
+// ==================================================
+// CONFIGURACIÓN INICIAL (SETUP)
+// ==================================================
 function setup() {
   let canvas = createCanvas(800, 800);
   canvas.parent('app-container');
 
   // --- BOTONES PRINCIPALES (Fila superior) ---
   btnConectar = createButton('🔗 Conectar Bluetooth');
-  btnConectar.parent('app-container');
   btnConectar.position(40, 205);
   estilarBoton(btnConectar, '#00ff00', '#000');
   btnConectar.mousePressed(connectSerial);
 
   btnIrRadar = createButton('🚀 Ir al Radar');
-  btnIrRadar.parent('app-container');
   btnIrRadar.position(230, 205); 
   estilarBoton(btnIrRadar, '#00ccff', '#000');
   btnIrRadar.mousePressed(() => cambiarEstado("RADAR"));
 
   btnVolverConfig = createButton('⚙️ Ajustes y Comandos');
-  btnVolverConfig.parent('app-container');
   btnVolverConfig.position(30, 30);
   estilarBoton(btnVolverConfig, '#002200', '#00ff00');
   btnVolverConfig.style('border', '1px solid #00ff00');
@@ -48,36 +40,33 @@ function setup() {
   btnVolverConfig.hide();
 
   // --- MODOS DE RADAR ---
-  btnModo360 = createButton('360° (Continuo)');
-  btnModo360.parent('app-container');
+  btnModo360 = createButton('🔄 360° (Continuo)');
   btnModo360.position(40, 310);
   estilarBoton(btnModo360, '#113311', '#00ff00');
   btnModo360.mousePressed(() => modoRadar = "360");
 
-  btnModo180 = createButton('180° (Normal)');
-  btnModo180.parent('app-container');
+  btnModo180 = createButton('📐 180° (Normal)');
   btnModo180.position(200, 310);
   estilarBoton(btnModo180, '#113311', '#00ff00');
   btnModo180.mousePressed(() => modoRadar = "180");
 
-  btnModoEstatico = createButton('Estático (Fijo 90°)'); // Nombre actualizado
-  btnModoEstatico.parent('app-container');
+  btnModoEstatico = createButton('🎯 Estático (Fijo 90°)'); 
   btnModoEstatico.position(360, 310);
   estilarBoton(btnModoEstatico, '#113311', '#00ff00');
   btnModoEstatico.mousePressed(() => modoRadar = "ESTATICO");
 
   // --- CONTROLES DE COLOR RGB ---
   inputR = createInput(colorRadar.r.toString(), 'number');
-  inputR.parent('app-container');
   inputR.position(40, 410); inputR.size(45);
+  inputR.parent('app-container');
   
   inputG = createInput(colorRadar.g.toString(), 'number');
-  inputG.parent('app-container');
   inputG.position(95, 410); inputG.size(45);
+  inputG.parent('app-container');
 
   inputB = createInput(colorRadar.b.toString(), 'number');
-  inputB.parent('app-container');
   inputB.position(150, 410); inputB.size(45);
+  inputB.parent('app-container');
 
   inputR.input(() => colorRadar.r = constrain(parseInt(inputR.value()) || 0, 0, 255));
   inputG.input(() => colorRadar.g = constrain(parseInt(inputG.value()) || 0, 0, 255));
@@ -85,43 +74,41 @@ function setup() {
 
   // Presets de colores
   btnColorVerde = createButton('Verde');
-  btnColorVerde.parent('app-container');
   btnColorVerde.position(220, 410);
   estilarBoton(btnColorVerde, '#00ff00', '#000');
   btnColorVerde.mousePressed(() => aplicarColorPreset(0, 255, 0));
 
   btnColorAmbar = createButton('Ámbar');
-  btnColorAmbar.parent('app-container');
   btnColorAmbar.position(285, 410);
   estilarBoton(btnColorAmbar, '#ffb000', '#000');
   btnColorAmbar.mousePressed(() => aplicarColorPreset(255, 176, 0));
 
   btnColorCyan = createButton('Cyan');
-  btnColorCyan.parent('app-container');
   btnColorCyan.position(355, 410);
   estilarBoton(btnColorCyan, '#00e5ff', '#000');
   btnColorCyan.mousePressed(() => aplicarColorPreset(0, 229, 255));
 
   btnColorRojo = createButton('Alerta');
-  btnColorRojo.parent('app-container');
   btnColorRojo.position(420, 410);
   estilarBoton(btnColorRojo, '#ff3333', '#fff');
   btnColorRojo.mousePressed(() => aplicarColorPreset(255, 51, 51));
 }
 
+// ==================================================
+// CICLO DE DIBUJO (DRAW - 60 FPS)
+// ==================================================
 function draw() {
-  background(colorRadar.r * 0.05, colorRadar.g * 0.05, colorRadar.b * 0.05);
-
   if (estadoApp === "CONFIGURACION") {
+    background(10, 15, 10);
     dibujarPantallaConfiguracion();
   } else if (estadoApp === "RADAR") {
     dibujarPantallaRadar();
   }
 }
 
-// --------------------------------------------------
-// 1. PANTALLA DE CONFIGURACIÓN
-// --------------------------------------------------
+// ==================================================
+// PANTALLA DE CONFIGURACIÓN
+// ==================================================
 function dibujarPantallaConfiguracion() {
   fill(colorRadar.r, colorRadar.g, colorRadar.b);
   noStroke();
@@ -176,7 +163,7 @@ function dibujarPantallaConfiguracion() {
 
   stroke(colorRadar.r, colorRadar.g, colorRadar.b, 100);
   fill(0, 15, 0);
-  rect(40, 495, 720, 265, 8);
+  rect(40, 495, 265, 8); // Ajuste de diseño
 
   fill(colorRadar.r, colorRadar.g, colorRadar.b);
   noStroke();
@@ -201,10 +188,11 @@ function dibujarPantallaConfiguracion() {
   text("• Modo Estático: Sensor fijo orientado a 90° (cono de visión de 45° a 135°).", 80, 720);
 }
 
-// --------------------------------------------------
-// 2. INTERFAZ GRÁFICA DEL RADAR
-// --------------------------------------------------
-unction dibujarPantallaRadar() {
+// ==================================================
+// INTERFAZ GRÁFICA DEL RADAR
+// ==================================================
+function dibujarPantallaRadar() {
+  // Efecto de rastro de pantalla
   background(colorRadar.r * 0.05, colorRadar.g * 0.05, colorRadar.b * 0.05, 20);
 
   let cx = width / 2;
@@ -258,8 +246,7 @@ unction dibujarPantallaRadar() {
 
   for (let r = 50; r <= radioMax; r += 50) {
     let distanciaCM = r / 5;
-
-    text(distanciaCM + " cm", cx + 8, cy - r + 15); // Eje superior
+    text(distanciaCM + " cm", cx + 8, cy - r + 15);
 
     if (modoRadar === "360") {
       text(distanciaCM + " cm", cx + 8, cy + r - 5);
@@ -275,7 +262,6 @@ unction dibujarPantallaRadar() {
   let anguloNorm = angulo % 360;
 
   if (modoRadar === "ESTATICO") {
-    // En modo estático, la línea indicadora se fija a 90° (al frente)
     stroke(colorRadar.r, colorRadar.g, colorRadar.b, 200);
     strokeWeight(2.5);
     line(cx, cy, cx, cy - radioMax);
@@ -299,11 +285,7 @@ unction dibujarPantallaRadar() {
     let anguloGrafica = obj.ang;
 
     if (modoRadar === "180" && obj.ang > 180) visible = false;
-    
-    // En modo estático dibujamos la lectura sobre el eje central (90°)
-    if (modoRadar === "ESTATICO") {
-      anguloGrafica = 90;
-    }
+    if (modoRadar === "ESTATICO") anguloGrafica = 90;
 
     if (visible) {
       let distPixel = map(obj.dist, 0, 60, 0, radioMax);
@@ -317,94 +299,116 @@ unction dibujarPantallaRadar() {
   }
 }
 
-// --------------------------------------------------
-// FUNCIONES DE SOPORTE
-// --------------------------------------------------
-function aplicarColorPreset(r, g, b) {
-  colorRadar = { r: r, g: g, b: b };
-  inputR.value(r);
-  inputG.value(g);
-  inputB.value(b);
-}
-
-function estilarBoton(btn, colorFondo, colorTexto) {
-  btn.style('padding', '8px 14px');
-  btn.style('background-color', colorFondo);
-  btn.style('color', colorTexto);
-  btn.style('border', 'none');
-  btn.style('border-radius', '4px');
-  btn.style('font-weight', 'bold');
-  btn.style('cursor', 'pointer');
-}
-
-function cambiarEstado(nuevoEstado) {
-  estadoApp = nuevoEstado;
-  let vis = (estadoApp === "CONFIGURACION");
-
-  if (vis) {
-    btnConectar.show(); btnIrRadar.show();
-    btnModo360.show(); btnModo180.show(); btnModoEstatico.show();
-    inputR.show(); inputG.show(); inputB.show();
-    btnColorVerde.show(); btnColorAmbar.show(); btnColorCyan.show(); btnColorRojo.show();
-    btnVolverConfig.hide();
-  } else {
-    btnConectar.hide(); btnIrRadar.hide();
-    btnModo360.hide(); btnModo180.hide(); btnModoEstatico.hide();
-    inputR.hide(); inputG.hide(); inputB.hide();
-    btnColorVerde.hide(); btnColorAmbar.hide(); btnColorCyan.hide(); btnColorRojo.hide();
-    btnVolverConfig.show();
-  }
-}
-
-// --------------------------------------------------
-// CONEXIÓN SERIAL BLUETOOTH
-// --------------------------------------------------
+// ==================================================
+// FUNCIONES BLUETOOTH (WEB SERIAL API)
+// ==================================================
 async function connectSerial() {
   try {
     port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 115200 }); // Ajustado a 115200 como en el ESP32
+    await port.open({ baudRate: 115200 });
     console.log("¡Puerto abierto con éxito!");
     
-    // Iniciamos la lectura continua en segundo plano UNA SOLA VEZ
+    // Iniciamos la lectura en segundo plano UNA SOLA VEZ
     readSerialData(); 
   } catch (err) {
     console.error("Error al conectar Bluetooth:", err);
   }
 }
 
-let buffer = "";
 async function readSerialData() {
-  if (port && port.readable) {
+  while (port && port.readable) {
     const reader = port.readable.getReader();
     try {
+      let buffer = "";
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        buffer += new TextDecoder().decode(value);
-        let lines = buffer.split("\n");
-        buffer = lines.pop();
-        for (let line of lines) parseData(line.trim());
+        
+        // Convertir los datos a texto
+        const text = new TextDecoder().decode(value);
+        buffer += text;
+        
+        // Separar por saltos de línea (\n)
+        let lines = buffer.split('\n');
+        buffer = lines.pop(); // Guardar el fragmento incompleto
+        
+        for (let line of lines) {
+          line = line.trim();
+          if (line) {
+            let datos = line.split(',');
+            if (datos.length === 2) {
+              angulo = parseInt(datos[0]);
+              let distancia = parseInt(datos[1]);
+              
+              if (!isNaN(angulo) && !isNaN(distancia)) {
+                objeto.push({ ang: angulo, dist: distancia });
+                if (objeto.length > 25) objeto.shift(); // Historial de 25
+              }
+            }
+          }
+        }
       }
     } catch (error) {
-      console.error("Error al leer serial:", error);
+      console.error("Error leyendo el puerto Serial:", error);
     } finally {
       reader.releaseLock();
     }
   }
 }
 
-function parseData(data) {
-  let values = data.split(",");
-  if (values.length === 2) {
-    let inAngulo = parseFloat(values[0]);
-    let inDistancia = parseFloat(values[1]);
+// ==================================================
+// FUNCIONES AUXILIARES (UI Y ESTILOS)
+// ==================================================
+function estilarBoton(btn, bg, clr) {
+  btn.style('background-color', bg);
+  btn.style('color', clr);
+  btn.style('border', 'none');
+  btn.style('padding', '10px 15px');
+  btn.style('border-radius', '5px');
+  btn.style('cursor', 'pointer');
+  btn.style('font-weight', 'bold');
+  btn.parent('app-container');
+}
 
-    if (!isNaN(inAngulo) && !isNaN(inDistancia)) {
-      angulo = inAngulo;
-      if (inDistancia > 2 && inDistancia < 60) {
-        objeto.push({ ang: inAngulo, dist: inDistancia });
-        if (objeto.length > 25) objeto.shift();
-      }
-    }
+function aplicarColorPreset(r, g, b) {
+  colorRadar = { r, g, b };
+  inputR.value(r);
+  inputG.value(g);
+  inputB.value(b);
+}
+
+function cambiarEstado(nuevoEstado) {
+  estadoApp = nuevoEstado;
+  if (estadoApp === "RADAR") {
+    btnConectar.hide();
+    btnIrRadar.hide();
+    btnModo360.hide();
+    btnModo180.hide();
+    btnModoEstatico.hide();
+    inputR.hide();
+    inputG.hide();
+    inputB.hide();
+    btnColorVerde.hide();
+    btnColorAmbar.hide();
+    btnColorCyan.hide();
+    btnColorRojo.hide();
+    
+    btnVolverConfig.show();
+    background(0); // Limpiar fondo al entrar al radar
+  } else {
+    btnConectar.show();
+    btnIrRadar.show();
+    btnModo360.show();
+    btnModo180.show();
+    btnModoEstatico.show();
+    inputR.show();
+    inputG.show();
+    inputB.show();
+    btnColorVerde.show();
+    btnColorAmbar.show();
+    btnColorCyan.show();
+    btnColorRojo.show();
+    
+    btnVolverConfig.hide();
   }
 }
