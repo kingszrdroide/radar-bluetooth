@@ -204,9 +204,8 @@ function dibujarPantallaConfiguracion() {
 // --------------------------------------------------
 // 2. INTERFAZ GRÁFICA DEL RADAR
 // --------------------------------------------------
-function dibujarPantallaRadar() {
+unction dibujarPantallaRadar() {
   background(colorRadar.r * 0.05, colorRadar.g * 0.05, colorRadar.b * 0.05, 20);
-  readSerialData();
 
   let cx = width / 2;
   let cy = height / 2;
@@ -363,7 +362,11 @@ function cambiarEstado(nuevoEstado) {
 async function connectSerial() {
   try {
     port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 9600 });
+    await port.open({ baudRate: 115200 }); // Ajustado a 115200 como en el ESP32
+    console.log("¡Puerto abierto con éxito!");
+    
+    // Iniciamos la lectura continua en segundo plano UNA SOLA VEZ
+    readSerialData(); 
   } catch (err) {
     console.error("Error al conectar Bluetooth:", err);
   }
